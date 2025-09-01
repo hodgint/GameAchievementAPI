@@ -6,10 +6,9 @@
 
 */
 
-
 const baseURL = "http://api.steampowered.com"
-var express = require('express');
-var router = express.Router();
+
+
 
 /**
  * example:
@@ -39,7 +38,7 @@ var router = express.Router();
     }
 }
  */
-export async function getSteamUserInfo(steamAPIKey, steamUserID) {
+async function getSteamUserInfo(steamAPIKey, steamUserID) {
     const url = `${baseURL}/ISteamUser/GetPlayerSummaries/v1/?key=${steamAPIKey}&steamids=${steamUserID}`
     const header = new Headers()
     header.append("Content-Type", "application/json");
@@ -273,7 +272,7 @@ export async function getSteamUserSpecificGameStats(steamAPIKey, steamUserID, ap
 }
  * 
  */
-export async function getSteamGameAchievmentInfo(steamAPIKey, appID) {
+async function getSteamGameAchievmentInfo(steamAPIKey, appID) {
     const url = `${baseURL}ISteamUserStats/GetSchemaForGame/v1/?key=${steamAPIKey}&appid=${appID}`
     return fetch(url)
         .then(res => {
@@ -287,7 +286,7 @@ export async function getSteamGameAchievmentInfo(steamAPIKey, appID) {
         });
 }
 
-export async function getSteamLastPlayedGame(steamAPIkey, steamUserID) {
+async function getSteamLastPlayedGame(steamAPIkey, steamUserID) {
     const url = `${baseURL}/IPlayerService/GetRecentlyPlayedGames/v0001/?key=${steamAPIkey}&steamid=${steamUserID}&count=1&format=json`
     return fetch(url)
         .then(res => {
@@ -304,7 +303,7 @@ export async function getSteamLastPlayedGame(steamAPIkey, steamUserID) {
 /*
     This doesn't work very well. It requires a list of appids that are a hassle to input 
 */
-export async function getSteamUsersTopGames(steamAPIKey, SteamUserID) {
+async function getSteamUsersTopGames(steamAPIKey, SteamUserID) {
     const url = `${baseURL}/IPlayerService/GetTopAchievementsForGames/v1/?key=${steamAPIKey}&steamid=${SteamUserID}&language=en&max_achievements=10000`
     return fetch(url)
         .then(res => {
@@ -322,7 +321,7 @@ export async function getSteamUsersTopGames(steamAPIKey, SteamUserID) {
 /**
  * this will loop through all games a user owns and add up any with all the achievements. This TAKES FOREVER!
  */
-export async function getSteamUsersCompletedGames(steamAPIKey, steamUserID, list = []) {
+async function getSteamUsersCompletedGames(steamAPIKey, steamUserID, list = []) {
     const completed = {
         total: 0,
         games: [Array]
@@ -332,15 +331,13 @@ export async function getSteamUsersCompletedGames(steamAPIKey, steamUserID, list
     if (list.length === 0) {
         list = await getSteamUserGameInfo(steamAPIKey, steamUserID, true, false)
     }
-    // @ts-ignore
     for (var i = 0; i <= list.game_count; i++) {
         // console.log("appID", list.games[i].appid)
         // check to see if the game has a proper appid. if not, skip it.
-        // @ts-ignore
         if (!('appid' in list.games[i])) {
             continue
         }
-        // @ts-ignore
+  
         const gameInfo = await getSteamUserSpecificGameStats(steamAPIKey, steamUserID, list.games[i].appid);
 
         // console.log("GameInfo", gameInfo)
@@ -360,7 +357,7 @@ export async function getSteamUsersCompletedGames(steamAPIKey, steamUserID, list
     return completed
 }
 
-export async function steamProfile(steamAPIKey, SteamUserID) {
+async function steamProfile(steamAPIKey, SteamUserID) {
     const steamProfile = await getSteamUserInfo(steamAPIKey, SteamUserID)
     const gameList = await getSteamUserGameInfo(steamAPIKey, SteamUserID, false, false)
     const lastPlayed = await getSteamLastPlayedGame(steamAPIKey, SteamUserID)
@@ -373,3 +370,6 @@ export async function steamProfile(steamAPIKey, SteamUserID) {
     }
     return profile
 }
+
+
+module.exports = router;

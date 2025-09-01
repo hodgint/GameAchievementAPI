@@ -1,0 +1,13 @@
+
+DROP TABLE IF EXISTS `amiibo`;
+
+CREATE TABLE `game` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `series` VARCHAR(255) NOT NULL,
+  `released` VARCHAR(255) NOT NULL,
+  `image` VARCHAR(255) NOT NULL,
+  `nfcTag` VARCHAR(255) NOT NULL,
+
+  PRIMARY KEY (`id`)
+);

@@ -1,16 +1,13 @@
-var express = require('express');
+var express = require('express')
 var router = express.Router();
-
 
 import XboxLiveAPI from '@xboxreplay/xboxlive-api';
 
-export async function xboxProfile(xboxAuth, xboxUID) {
-
+async function xboxProfile(xboxAuth, xboxUID) {
     const playerSettings = await XboxLiveAPI.getPlayerSettings(xboxUID, {
         userHash: xboxAuth.user_hash,
         XSTSToken: xboxAuth.xsts_token
-    }, ['UniqueModernGamertag', 'Gamerscore'])
-
+    }, ['UniqueModernGamertag', 'Gamerscore']);
     const lastPlayed = await XboxLiveAPI.getPlayerActivityHistory(xboxUID, {
         userHash: xboxAuth.user_hash,
         XSTSToken: xboxAuth.xsts_token
@@ -18,14 +15,14 @@ export async function xboxProfile(xboxAuth, xboxUID) {
         excludeTypes: "GameDVR",
         contentTypes: "Game"
     });
-
     const profile = {
         // @ts-ignore
         gamerTag: playerSettings.at(0).value,
         // @ts-ignore
         gamerScore: (playerSettings.at(1).value),
         lastAchievement: lastPlayed.activityItems.at(0)
-    }
-
-    return profile
+    };
+    return profile;
 }
+
+// module.exports = router;
