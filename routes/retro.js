@@ -1,6 +1,6 @@
-const {getUserProfile } = require('@retroachievements/api');
-var express = require('express');
-var router = express.Router();
+import {getUserProfile } from '@retroachievements/api';
+import express from 'express';
+const retroRouter = express.Router();
 
 // function getRetroAuth(apiKey, user){
 //     const auth = buildAuthorization({ webApiKey: apiKey, username: user});
@@ -36,7 +36,7 @@ function getRetroUserProfile(auth, user){
 // })
 
 
-router.get('/profile/:username', function(req,res){
+retroRouter.get('/profile/:username', function(req,res){
     const username = req.params.username;
     const auth = req.app.locals.retroAuth;
     getRetroUserProfile(auth, username)
@@ -52,4 +52,4 @@ router.get('/profile/:username', function(req,res){
 
 
 
-module.exports = router;
+export default retroRouter;

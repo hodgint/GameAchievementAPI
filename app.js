@@ -1,27 +1,34 @@
-var createError = require('http-errors');
-require('dotenv').config();
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+import createError from 'http-errors';
+import 'dotenv/config';
+import express from 'express';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// import indexRouter from './routes/index.js';
 
 /* Achivement routes */
-var retroRouter = require('./routes/retro');
-var psnRouter = require('./routes/psn');
+import retroRouter from './routes/retro.js';
+import psnRouter from './routes/psn.js';
 // var steamRouter = require('./routes/steam');
-// var xboxRouter = require('./routes/xbox')
-const { buildAuthorization } = require('@retroachievements/api');
+// import xboxRouter = require('./routes/xbox')
+import { buildAuthorization } from '@retroachievements/api';
+/* create file path to match the commonJS dirpath. */
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-var app = express();
+const app = express();
 
 /* global vars from env */
 // Retro
 app.locals.retroAPIKey = process.env.retroAPIKey
 app.locals.retroAdminUsername = process.env.retroUsername
-app.locals.retroAuth = buildAuthorization({username: app.locals.retroAdminUsername, webApiKey: app.locals.retroAPIKey});
+// app.locals.retroAuth = buildAuthorization({
+//   username: app.locals.retroAdminUsername, 
+//   webApiKey: app.locals.retroAPIKey
+// });
 
 // PSN
 app.locals.npsso = process.env.npsso
@@ -36,22 +43,20 @@ app.locals.steamID = process.env.steamID
 app.locals.xboxEmail = process.env.xboxEmail
 app.locals.xboxPassword = process.env.xboxPassword
 app.locals.xboxUID = process.env.xboxUID
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
+console.log('before app.use()');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+console.log('After')
+// app.use('/', indexRouter);
+// app.use('/users', usersRouter);
 /* achivement platform routes */
 app.use('/retro', retroRouter);
-app.use('/psn', psnRouter)
+app.use('/psn', psnRouter);
+// app.use ('/xbox', xboxRouter);
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
@@ -68,8 +73,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-module.exports = app;
-
+export default app;
 
 const port = 3000;
 

@@ -4,11 +4,15 @@
     Get info for profile and games/trophis.
 
 */
+// import { validateHeaders } from './middlewares/validators.js';
 
-var express = require('express')
-var router = express.Router();
+import express from 'express';
+const psnRouter = express.Router();
 
 const authBaseURL = "https://ca.account.sony.com/api/authz/v3/oauth";
+const userBaseURL = "https://m.np.playstation.com/api/userProfile/v1/internal/users";
+const gameBaseURL = "https://m.np.playstation.com/api/gamelist/v2/users";
+const trophyBaseURL = "https://m.np.playstation.com/api/trophy/v1/users";
 
 /* Auth functions */
 async function exchangeNPSSOForAccessCode(npsso){
@@ -41,7 +45,6 @@ async function exchangeNPSSOForAccessCode(npsso){
   );
     return redirectParams.get("code").toString();
 }
-
 
 async function exchangeAccessCodeForAuthToken(accessCode){
     const requestUrl = `${authBaseURL}/token`;
@@ -102,9 +105,22 @@ async function exchangeRefreshTokenForAuthToken(refreshToken){
 
 }
 
-/* trophy functions */
 
-/* user functions */
+async function getUsersPSNGames(psnAuth, accountID){
+    const requestUrl = `${gameBaseURL}/${accountID}/titles`
+    // console.log("reqURL: ", requestUrl);
+    // console.log("psnAuth: ", psnAuth);
+    const res = await fetch(requestUrl, {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${psnAuth}`,
+            "Content-Type": "application/json"
+        }
+    });
+    console.log("game response:", res);
+    return res;
+}
+
 /* The follow uses the PSN-API module * /
 /**
     Notes: creates an object with the trophy counts for each type as well as the total trophies earned.
@@ -140,16 +156,21 @@ async function trophyTypeCount(psnAuth, psnAccountID) {
 }
 
 async function psnProfile(psnAuth, psnAccountID) {
-    return {
-        profile: getProfileFromAccountId({ accessToken: psnAuth.accessToken }, psnAccountID),
-        links: getProfileShareableLink(psnAuth, psnAccountID),
-        recent: getRecentlyPlayedGames(psnAuth, { limit: 1, categories: ["ps4_game", "ps5_native_game"] }),
-        trophyCounts: trophyTypeCount(psnAuth, psnAccountID)
-    }
+    const requestUrl = `${userBaseURL}/${psnAccountID}/profiles`;
 
+     const response = await fetch(requestUrl, {
+        headers: {
+            authorization: psnAuth
+        }
+     });
+
+    if ((response)?.error) {
+        throw new Error((response)?.error?.message ?? "Unexpected Error");
+    }
+    return response;
 }
 
-router.get('/auth/:npsso', function(req,res){
+psnRouter.get('/auth/:npsso', function(req,res){
     const npsso = req.params.npsso;
     console.log('NPSSO:', npsso);
     exchangeNPSSOForAccessCode(npsso)
@@ -168,18 +189,18 @@ router.get('/auth/:npsso', function(req,res){
     })
 });
 
-router.get('/profile/:account', function(req,res){
-    const auth = req.params.account.accessToken;
-    const accountID = req.params.account.accountID;
-    psnProfile(auth, accountID)
+psnRouter.get('/profile/:accountID', function(req,res){
+    const auth = req.headers.authorization;
+    const accountID = req.params.accountID;
+    getUsersPSNGames(auth, accountID)
     .then((profile) => {
-        if(profile){
+        if(profile && profile.status != "401"){
+            console.log(profile);
             res.status(200).json(profile);
         }else{
-            next();
+            res.status(profile.status).json(profile.statusText);
         }
     });
 });
 
-
-module.exports = router;
+export default psnRouter;

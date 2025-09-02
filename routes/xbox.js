@@ -1,7 +1,7 @@
-var express = require('express')
+import express from 'express'
 var router = express.Router();
 
-import XboxLiveAPI from '@xboxreplay/xboxlive-api';
+const xboxAPI = require('XboxLiveAPI');
 
 async function xboxProfile(xboxAuth, xboxUID) {
     const playerSettings = await XboxLiveAPI.getPlayerSettings(xboxUID, {

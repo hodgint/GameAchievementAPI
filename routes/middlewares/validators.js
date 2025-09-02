@@ -1,27 +1,46 @@
-import { header, validationResult } from "express-validator";
-
-
-export const requestHeaders = [
-  header('authorization')
-    .exists({ checkFalsy: true })
-    .withMessage("Missing Authorization Header") // you can specify the message to show if a validation has failed
-    .bail() // not necessary, but it stops execution if previous validation failed
-    //you can chain different validation rules 
-    .contains("Bearer")
-    .withMessage("Authorization Token is not Bearer")
-];
-
-
-export function validateRequest(req, res, next) {
-  const validationErrors = validationResult(req);
-  const errorMessages = [];
-
-  for (const e of validationErrors.array()) {
-    errorMessages.push(e.msg);
-  }
-
-  if (!validationErrors.isEmpty()) {
-    return res.status(403).json({ "errors": errorMessages });
-  }
-  next();
+/* 
+middleware and schemas for validating various sensitive information
+Authentication schema's will be different for each platform.
+*/
+export const psnAuthSchema = {
+    accessToken: {required: true},
+    expiresIn: {required: true},
+    idToken: {required: true},
+    refreshToken: {required: true},
+    refreshTokenExpiresIn: {required: true},
+    scope: {required: true},
+    tokenType: {required: true}
 }
+
+export const retroAuthSchema = {}
+export const steamAuthSchema = {}
+export const xboxAuthSchema = {}
+
+
+function validatePSNAuth(psnAuth){
+        
+}
+
+function validateRetroAuth(retroAuth){
+        
+}
+
+function validateSteamAuth(steamAuth){
+        
+}
+
+
+function validateXboxAuth(xboxAuth){
+        
+}
+
+
+export function validateHeaders(req, res, next) {
+/* make sure we have an auth token in the header */
+    if (!req.headers.authorization) {
+        return res.status(403).json({ error: 'No auth token sent!' });
+    }
+    next();
+};
+
+
